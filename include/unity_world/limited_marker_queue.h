@@ -8,17 +8,17 @@
 
 class LimitedMarkerQueue {
   public:
-    LimitedMarkerQueue(int max_length);
+    // option for later: LimitedMarkerQueue(int max_length);
     LimitedMarkerQueue(int max_length, ros::Duration element_lifetime);
     ~LimitedMarkerQueue() {};
 
-    void push(visualization_msgs::Marker marker);    
+    void push(visualization_msgs::Marker marker);
     void get_mean_marker(visualization_msgs::Marker &mean_marker);
 
   private:
 
     int max_length_;
-    ros::Duration element_lifetime;
+    ros::Duration element_lifetime_;
     std::list<visualization_msgs::Marker> marker_list_;
 
 
