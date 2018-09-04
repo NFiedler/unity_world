@@ -13,13 +13,15 @@ class LimitedMarkerQueue {
     ~LimitedMarkerQueue() {};
 
     void push(visualization_msgs::Marker marker);
-    void get_mean_marker(visualization_msgs::Marker &mean_marker);
+    bool get_mean_marker(visualization_msgs::Marker &mean_marker);
 
   private:
 
     int max_length_;
     ros::Duration element_lifetime_;
     std::list<visualization_msgs::Marker> marker_list_;
+
+    void update_marker_list();
 
 
 #endif
