@@ -3,6 +3,7 @@
 #define UNITY_WORLD
 
 #include <ros/ros.h>
+#include <unity_world/limited_marker_queue.h>
 #include <map>
 #include <vector>
 #include <algorithm>
@@ -13,38 +14,42 @@
 #include <pr2_phantom/State.h>
 #include <tf/transform_listener.h>
 #include <geometry_msgs/PointStamped.h>
+#include <std_srvs/Trigger.h>
 
 class UnityWorld {
   public:
     UnityWorld();
     ~UnityWorld(){};
 
+    // subscriber callbacks:
     void objectsCallback(const visualization_msgs::MarkerArray &msg);
-    void stateCallback(const pr2_phantom::State &msg);
-    void planPickCallback(const geometry_msgs::PointStamped &msg);
-    void planPlaceCallback(const geometry_msgs::PointStamped &msg);
+
+    // service callbacks:
+    void setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    void resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
 
   private:
     ros::NodeHandle nh_;
 
     uint object_lifetime_secs_ = 10;
-    uint object_smoothing_queue_length = 5;
+    uint object_smoothing_queue_length_ = 5;
 
-    std::vector<std::pair<std::string, visualization_msgs::Marker>> // TODO: List of queues!!!
+    std::map<std::string, limited_marker_queue::LimitedMarkerQueue> object_smoothing_queues_;
 
+    // used to transform the recieved markers
     tf::TransformListener collision_object_transform_listener_;
-    
+
     ros::Subscriber object_sub_; // subscribes to the apriltag objects
-    ros::Subscriber state_sub_; // subscribes to the state of the pick-place node
-    ros::Subscriber plan_pick_sub_;
-    ros::Subscriber plan_place_sub_;
-    
+
+    ros::ServiceServer setupPlanningSceneservice_;
+    ros::ServiceServer resetPlanningSceneservice_;
+
     moveit::planning_interface::PlanningSceneInterface *psi_;
 
     void remove_collision_objects();
     void add_collision_objects();
-    void update from planning_scene();
+    void update_from_planning_scene(bool use_queue);
     void get_collision_objects(std::vector<std::string> collision_object_ids);
     void get_collision_object(std::string collision_object_id);
 
