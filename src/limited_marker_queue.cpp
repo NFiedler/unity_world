@@ -17,20 +17,23 @@ bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker
   }
 
 
-  // reset the marker
+  // reset the marker by setting it to the most recent element in the queue.
   mean_marker = marker_list_.back();
 
   // iterate through list
   for (visualization_msgs::Marker::iterator marker_iterator = marker_list_.begin(); marker_iterator < marker_list_.end() - 1; marker_iterator++) {
+    // position
     mean_marker.pose.position.x += (*marker_iterator)->pose.position.x;
     mean_marker.pose.position.y += (*marker_iterator)->pose.position.y;
     mean_marker.pose.position.z += (*marker_iterator)->pose.position.z;
 
+    // orientation
     mean_marker.pose.orientation.x += (*marker_iterator)->pose.orientation.x;
     mean_marker.pose.orientation.y += (*marker_iterator)->pose.orientation.y;
     mean_marker.pose.orientation.z += (*marker_iterator)->pose.orientation.z;
     mean_marker.pose.orientation.w += (*marker_iterator)->pose.orientation.w;
 
+    // the shape etc. is not changed
   }
 
   mean_marker.pose.position.x /= marker_list_size;
@@ -43,6 +46,10 @@ bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker
   mean_marker.pose.orientation.w /= marker_list_size;
 
   return true;
+}
+
+void LimitedMarkerQueue::reset() {
+  marker_list_.clear();
 }
 
 void LimitedMarkerQueue::update_marker_list() {

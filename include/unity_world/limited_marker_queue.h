@@ -14,6 +14,7 @@ class LimitedMarkerQueue {
 
     void push(visualization_msgs::Marker marker);
     bool get_mean_marker(visualization_msgs::Marker &mean_marker);
+    void reset();
 
   private:
 
