@@ -16,3 +16,16 @@ UnityWorld::UnityWorld() : nh_() {
   resetPlanningSceneService_ = nh.advertiseService("resetPlanningSceneService", resetPlanningSceneCallback);
 
 }
+void UnityWorld::setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+  add_collision_objects();
+  res.success = true;
+  res.message = "added collision objects to planning scene";
+  return true;
+}
+
+void UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+  remove_collision_objects();
+  res.success = true;
+  res.message = "removed collision objects from planning scene";
+  return true;
+}
