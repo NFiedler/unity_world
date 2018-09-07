@@ -42,8 +42,8 @@ class UnityWorld {
 
     ros::Subscriber object_sub_; // subscribes to the apriltag objects
 
-    ros::ServiceServer setupPlanningSceneservice_;
-    ros::ServiceServer resetPlanningSceneservice_;
+    ros::ServiceServer setupPlanningSceneService_;
+    ros::ServiceServer resetPlanningSceneService_;
 
     moveit::planning_interface::PlanningSceneInterface *psi_;
 
