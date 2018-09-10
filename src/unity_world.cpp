@@ -30,6 +30,26 @@ void UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std
   return true;
 }
 
+void UnityWorld::add_collision_objects() {
+  visualization_msgs::Marker marker;
+  moveit_msgs::CollisionObject collision_object;
+  for (auto &object_queue : object_smoothing_queues_) {
+    if (!object_queue.second.get_mean_marker(marker)) {
+      // impossible to create a mean marker
+      // (too old)
+      continue;
+    }
+    if (!markerMsgToCollisionObjectMsg(marker, collision_object)) { // conversion without transform nesessary!
+      continue;
+    }
+
+    // set in conversion function
+    // collision_object.operation = collision_object::ADD;
+
+    psi_->applyCollisionObject(collision_object);
+  }
+
+}
 
 int main(int argc, char **argv) {
 
