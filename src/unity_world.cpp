@@ -15,6 +15,14 @@ UnityWorld::UnityWorld() : nh_() {
   setupPlanningSceneService_ = nh_.advertiseService("setupPlanningSceneService", &UnityWorld::setupPlanningSceneCallback, this);
   resetPlanningSceneService_ = nh_.advertiseService("resetPlanningSceneService", &UnityWorld::resetPlanningSceneCallback, this);
 
+  // setup publishers
+
+  collision_object_publisher_ = nh_.advertise<moveit_msgs::CollisionObject>("/collision_object", 5);
+
+  // setup timers
+
+  publishing_timer_ = nh_.createTimer(ros::Duration(0.1), &UnityWorld::publishing_timer_callback, this);
+
 }
 
 void UnityWorld::objectsCallback(const visualization_msgs::MarkerArray &msg) {
@@ -35,6 +43,10 @@ bool UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std
   res.success = true;
   res.message = "removed collision objects from planning scene";
   return true;
+}
+
+void UnityWorld::publishing_timer_callback(const ros::TimerEvent&) {
+  // TODO
 }
 
 void UnityWorld::remove_collision_objects() {

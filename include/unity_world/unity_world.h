@@ -43,8 +43,12 @@ class UnityWorld {
     ros::ServiceServer setupPlanningSceneService_;
     ros::ServiceServer resetPlanningSceneService_;
 
+    ros::Timer publishing_timer_;
+    ros::Publisher collision_object_publisher_;
+
     moveit::planning_interface::PlanningSceneInterface *psi_;
 
+    void publishing_timer_callback(const ros::TimerEvent&);
     void remove_collision_objects();
     void add_collision_objects();
     void update_from_planning_scene(bool use_queue);
