@@ -8,22 +8,29 @@ UnityWorld::UnityWorld() : nh_() {
 
   // setup subscribers
   object_sub_ = nh_.subscribe(
-      "apriltag_objects", 1, &MoveitConnector::objectsCallback, this);
+      "apriltag_objects", 1, &UnityWorld::objectsCallback, this);
 
 
   // setup services
-  setupPlanningSceneService_ = nh.advertiseService("setupPlanningSceneService", setupPlanningSceneCallback);
-  resetPlanningSceneService_ = nh.advertiseService("resetPlanningSceneService", resetPlanningSceneCallback);
+  setupPlanningSceneService_ = nh_.advertiseService("setupPlanningSceneService", &UnityWorld::setupPlanningSceneCallback, this);
+  resetPlanningSceneService_ = nh_.advertiseService("resetPlanningSceneService", &UnityWorld::resetPlanningSceneCallback, this);
 
 }
-void UnityWorld::setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+
+void UnityWorld::objectsCallback(const visualization_msgs::MarkerArray &msg) {
+  // TODO
+
+
+}
+
+bool UnityWorld::setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
   add_collision_objects();
   res.success = true;
   res.message = "added collision objects to planning scene";
   return true;
 }
 
-void UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+bool UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
   remove_collision_objects();
   res.success = true;
   res.message = "removed collision objects from planning scene";

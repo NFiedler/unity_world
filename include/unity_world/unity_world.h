@@ -25,8 +25,8 @@ class UnityWorld {
     void objectsCallback(const visualization_msgs::MarkerArray &msg);
 
     // service callbacks:
-    void setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
-    void resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    bool setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    bool resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 
 
   private:
