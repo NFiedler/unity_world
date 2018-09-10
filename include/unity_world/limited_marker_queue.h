@@ -2,9 +2,10 @@
 #ifndef LIMITED_MARKER_QUEUE
 #define LIMITED_MARKER_QUEUE
 
-#include <list.h>
+#include <list>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include <iterator>
 
 class LimitedMarkerQueue {
   public:
@@ -23,6 +24,7 @@ class LimitedMarkerQueue {
     std::list<visualization_msgs::Marker> marker_list_;
 
     void update_marker_list();
+};
 
 
 #endif

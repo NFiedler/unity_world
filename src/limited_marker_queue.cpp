@@ -19,19 +19,21 @@ bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker
 
   // reset the marker by setting it to the most recent element in the queue.
   mean_marker = marker_list_.back();
+  std::list<visualization_msgs::Marker>::iterator pre_last = marker_list_.end();
+  pre_last--;
 
   // iterate through list
-  for (visualization_msgs::Marker::iterator marker_iterator = marker_list_.begin(); marker_iterator < marker_list_.end() - 1; marker_iterator++) {
+  for (std::list<visualization_msgs::Marker>::iterator marker_iterator = marker_list_.begin(); marker_iterator != pre_last; marker_iterator++) {
     // position
-    mean_marker.pose.position.x += (*marker_iterator)->pose.position.x;
-    mean_marker.pose.position.y += (*marker_iterator)->pose.position.y;
-    mean_marker.pose.position.z += (*marker_iterator)->pose.position.z;
+    mean_marker.pose.position.x += marker_iterator->pose.position.x;
+    mean_marker.pose.position.y += marker_iterator->pose.position.y;
+    mean_marker.pose.position.z += marker_iterator->pose.position.z;
 
     // orientation
-    mean_marker.pose.orientation.x += (*marker_iterator)->pose.orientation.x;
-    mean_marker.pose.orientation.y += (*marker_iterator)->pose.orientation.y;
-    mean_marker.pose.orientation.z += (*marker_iterator)->pose.orientation.z;
-    mean_marker.pose.orientation.w += (*marker_iterator)->pose.orientation.w;
+    mean_marker.pose.orientation.x += marker_iterator->pose.orientation.x;
+    mean_marker.pose.orientation.y += marker_iterator->pose.orientation.y;
+    mean_marker.pose.orientation.z += marker_iterator->pose.orientation.z;
+    mean_marker.pose.orientation.w += marker_iterator->pose.orientation.w;
 
     // the shape etc. is not changed
   }
