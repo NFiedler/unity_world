@@ -38,7 +38,14 @@ bool UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std
 }
 
 void UnityWorld::remove_collision_objects() {
-  //TODO
+  moveit_msgs::CollisionObject current_collision_object;
+  std::map<std::string, moveit_msgs::CollisionObject> collision_objects = psi_->getObjects();
+  for (std::map<std::string, moveit_msgs::CollisionObject>::iterator it = collision_objects.begin(); it != collision_objects.end(); it++ )
+  {
+    current_collision_object = it->second;
+    current_collision_object.operation = current_collision_object.REMOVE;
+    psi_->applyCollisionObject(current_collision_object);
+  }
 }
 
 void UnityWorld::add_collision_objects() {
