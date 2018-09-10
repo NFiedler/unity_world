@@ -10,8 +10,6 @@
 #include <visualization_msgs/Marker.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit_msgs/CollisionObject.h>
-#include <apriltag_object_detection/marker_to_collision_object.h>
-#include <pr2_phantom/State.h>
 #include <tf/transform_listener.h>
 #include <geometry_msgs/PointStamped.h>
 #include <std_srvs/Trigger.h>
@@ -35,7 +33,7 @@ class UnityWorld {
     uint object_lifetime_secs_ = 10;
     uint object_smoothing_queue_length_ = 5;
 
-    std::map<std::string, limited_marker_queue::LimitedMarkerQueue> object_smoothing_queues_;
+    std::map<std::string, LimitedMarkerQueue> object_smoothing_queues_;
 
     // used to transform the recieved markers
     tf::TransformListener collision_object_transform_listener_;
