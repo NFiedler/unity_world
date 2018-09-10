@@ -29,3 +29,14 @@ void UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std
   res.message = "removed collision objects from planning scene";
   return true;
 }
+
+
+int main(int argc, char **argv) {
+
+  ros::init(argc, argv, "UnityWorld");
+
+  UnityWorld unity_world;
+
+  ros::spin();
+  return 0;
+};
