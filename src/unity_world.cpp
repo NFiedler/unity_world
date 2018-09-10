@@ -37,6 +37,10 @@ bool UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std
   return true;
 }
 
+void UnityWorld::remove_collision_objects() {
+  //TODO
+}
+
 void UnityWorld::add_collision_objects() {
   visualization_msgs::Marker marker;
   moveit_msgs::CollisionObject collision_object;
@@ -56,6 +60,18 @@ void UnityWorld::add_collision_objects() {
     psi_->applyCollisionObject(collision_object);
   }
 
+}
+
+void UnityWorld::update_from_planning_scene(bool use_queue) {
+  // TODO
+}
+
+void UnityWorld::get_collision_objects(std::vector<std::string> collision_object_ids) {
+  // TODO
+}
+
+void UnityWorld::get_collision_object(std::string collision_object_id) {
+  // TODO
 }
 
 bool UnityWorld::markerMsgToCollisionObjectMsg(visualization_msgs::Marker marker, moveit_msgs::CollisionObject &collision_object) {
