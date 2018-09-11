@@ -16,6 +16,7 @@ class LimitedMarkerQueue {
 
     void push(visualization_msgs::Marker marker);
     bool get_mean_marker(visualization_msgs::Marker &mean_marker);
+    bool get_mean_collision_object(moveit_msgs::CollisionObject &mean_collision_object);
     void reset();
 
   private:
@@ -25,6 +26,7 @@ class LimitedMarkerQueue {
     ros::Duration element_lifetime_;
     std::list<visualization_msgs::Marker> marker_list_;
     visualization_msgs::Marker buffer_marker_;
+    moveit_msgs::CollisionObject buffer_collision_object_;
 
     void update_marker_list();
     bool markerMsgToCollisionObjectMsg(

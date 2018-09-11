@@ -24,6 +24,8 @@ bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker
 
   // reset the marker by setting it to the most recent element in the queue.
   mean_marker = marker_list_.back();
+
+  // setting up the iterator to ignore the last element of the list.
   std::list<visualization_msgs::Marker>::iterator pre_last = marker_list_.end();
   pre_last--;
 
@@ -53,9 +55,18 @@ bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker
   mean_marker.pose.orientation.w /= marker_list_size;
 
   buffer_marker_ = visualization_msgs::Marker(mean_marker); // copy the marker to the buffer.
+  markerMsgToCollisionObjectMsg(buffer_marker_, buffer_collision_object_); // convert the marker to a collision object to provide and buffer both options
   queue_changed_ = false;
 
   return true;
+}
+
+bool LimitedMarkerQueue::get_mean_collision_object(moveit_msgs::CollisionObject &mean_collision_object){
+  //TODO: Find a better way to do this
+  visualization_msgs::Marker dummy_marker;
+  bool result = get_mean_marker(dummy_marker);
+  mean_collision_object = moveit_msgs::CollisionObject(buffer_collision_object_);
+  return result;
 }
 
 void LimitedMarkerQueue::reset() {
