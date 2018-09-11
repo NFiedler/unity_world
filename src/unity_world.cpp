@@ -108,8 +108,21 @@ void UnityWorld::add_collision_objects() {
 
 }
 
-void UnityWorld::update_from_planning_scene(bool use_queue) {
-  // TODO
+void UnityWorld::get_update_from_planning_scene() {
+
+  for (auto &object_queue : object_smoothing_queues_) {
+    // reset all queues
+    object_queue.second.reset();
+  }
+
+  visualization_msgs::Marker marker;
+
+  // adding all CollisionObjects to the queue. No object should be attached at this point.
+  for (auto &collision_object : psi_->getObjects()) {
+    collisionObjectMsgToMarkerMsg(collision_object.second, marker); // getObjects() returns a map, therefore the element is a pair.
+    object_smoothing_queues_[marker.id].push(visualization_msgs::Marker(marker));
+  }
+
 }
 
 void UnityWorld::get_collision_objects(std::vector<std::string> collision_object_ids) {
