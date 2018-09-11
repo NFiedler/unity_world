@@ -4,7 +4,7 @@ LimitedMarkerQueue::LimitedMarkerQueue() {
   LimitedMarkerQueue(5, ros::Duration(10));
 }
 
-LimitedMarkerQueue::LimitedMarkerQueue(int max_length, ros::Duration element_lifetime) : max_length_(max_length), element_lifetime_(element_lifetime), marker_list_(), queue_changed_(true) {}
+LimitedMarkerQueue::LimitedMarkerQueue(int max_length, ros::Duration element_lifetime) : max_length_(max_length), queue_changed_(true), element_lifetime_(element_lifetime), marker_list_()  {}
 
 
 void LimitedMarkerQueue::push(visualization_msgs::Marker marker) {
@@ -14,6 +14,7 @@ void LimitedMarkerQueue::push(visualization_msgs::Marker marker) {
 }
 
 bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker){
+
   // update the marker list before accessing it
   update_marker_list();
   int marker_list_size = marker_list_.size();
@@ -85,7 +86,7 @@ void LimitedMarkerQueue::update_marker_list() {
   }
 
   // limit element age
-  while ((ros::Time::now() - marker_list_.front().header.stamp) > element_lifetime_) {
+  while (marker_list_.size() > 0 && (ros::Time::now() - marker_list_.front().header.stamp) > element_lifetime_) {
       marker_list_.pop_front();
       queue_changed_ = true;
   }
