@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <iterator>
+#include <moveit_msgs/CollisionObject.h>
 
 class LimitedMarkerQueue {
   public:
@@ -20,10 +21,15 @@ class LimitedMarkerQueue {
   private:
 
     int max_length_;
+    bool queue_changed_;
     ros::Duration element_lifetime_;
     std::list<visualization_msgs::Marker> marker_list_;
+    visualization_msgs::Marker buffer_marker_;
 
     void update_marker_list();
+    bool markerMsgToCollisionObjectMsg(
+      visualization_msgs::Marker marker,
+      moveit_msgs::CollisionObject &collision_object);
 };
 
 
