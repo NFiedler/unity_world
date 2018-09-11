@@ -32,8 +32,9 @@ class UnityWorld {
 
     uint object_lifetime_secs_ = 10;
     uint object_smoothing_queue_length_ = 5;
+    std::string object_frame_id = "/odom_combined";
 
-    std::map<std::string, LimitedMarkerQueue> object_smoothing_queues_;
+    std::map<int, LimitedMarkerQueue> object_smoothing_queues_;
 
     // used to transform the recieved markers
     tf::TransformListener collision_object_transform_listener_;

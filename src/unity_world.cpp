@@ -26,9 +26,34 @@ UnityWorld::UnityWorld() : nh_() {
 }
 
 void UnityWorld::objectsCallback(const visualization_msgs::MarkerArray &msg) {
-  // TODO
+  visualization_msgs::Marker marker;
+  for (auto &msg_marker : msg.markers) {
+    // copy the marker to have a mutable version
+    marker = visualization_msgs::Marker(msg_marker);
+    // transform the pose
+    tf::StampedTransform marker_transform;
+    tf::Transform object_transform;
 
+    tf::TransformListener listener;
+    try {
+      listener.waitForTransform(object_frame_id, marker.header.frame_id, ros::Time(0),
+                                ros::Duration(5.0));
+      listener.lookupTransform(object_frame_id, marker.header.frame_id, ros::Time(0),
+                               marker_transform);
+    } catch (tf::TransformException ex) {
+      ROS_ERROR("%s", ex.what());
+      return;
+    }
 
+    tf::poseMsgToTF(marker.pose, object_transform);
+
+    // geometry_msgs::Pose pose;
+    tf::poseTFToMsg(marker_transform * object_transform, marker.pose);
+    marker.header.frame_id = object_frame_id;
+
+    // the []-operator accesses existing elements and creates them when they are not in the map already.
+    object_smoothing_queues_[marker.id].push(marker);
+  }
 }
 
 bool UnityWorld::setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
