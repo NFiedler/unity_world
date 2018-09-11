@@ -46,7 +46,13 @@ bool UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std
 }
 
 void UnityWorld::publishing_timer_callback(const ros::TimerEvent&) {
-  // TODO
+  // publish all mean collision objects which are updated recent enough
+  moveit_msgs::CollisionObject collision_object;
+  for (auto& object_queue : object_smoothing_queues_) {
+    if (object_queue.second.get_mean_collision_object(collision_object)) {
+      collision_object_publisher_.publish(collision_object);
+    }
+  }
 }
 
 void UnityWorld::remove_collision_objects() {
