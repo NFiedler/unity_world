@@ -6,6 +6,8 @@ UnityWorld::UnityWorld() : nh_() {
   // setup planning scene interface
   psi_ = new moveit::planning_interface::PlanningSceneInterface();
 
+  publish_from_psi_ = false;
+
   // setup subscribers
   object_sub_ = nh_.subscribe(
       "apriltag_objects", 1, &UnityWorld::objectsCallback, this);
@@ -26,6 +28,7 @@ UnityWorld::UnityWorld() : nh_() {
 }
 
 void UnityWorld::objectsCallback(const visualization_msgs::MarkerArray &msg) {
+
   visualization_msgs::Marker marker;
   for (auto &msg_marker : msg.markers) {
     // copy the marker to have a mutable version
@@ -34,11 +37,10 @@ void UnityWorld::objectsCallback(const visualization_msgs::MarkerArray &msg) {
     tf::StampedTransform marker_transform;
     tf::Transform object_transform;
 
-    tf::TransformListener listener;
     try {
-      listener.waitForTransform(object_frame_id, marker.header.frame_id, ros::Time(0),
-                                ros::Duration(5.0));
-      listener.lookupTransform(object_frame_id, marker.header.frame_id, ros::Time(0),
+      collision_object_transform_listener_.waitForTransform(object_frame_id_, marker.header.frame_id, ros::Time(0),
+                                ros::Duration(.5));
+      collision_object_transform_listener_.lookupTransform(object_frame_id_, marker.header.frame_id, ros::Time(0),
                                marker_transform);
     } catch (tf::TransformException ex) {
       ROS_ERROR("%s", ex.what());
@@ -49,10 +51,10 @@ void UnityWorld::objectsCallback(const visualization_msgs::MarkerArray &msg) {
 
     // geometry_msgs::Pose pose;
     tf::poseTFToMsg(marker_transform * object_transform, marker.pose);
-    marker.header.frame_id = object_frame_id;
+    marker.header.frame_id = object_frame_id_;
 
     // the []-operator accesses existing elements and creates them when they are not in the map already.
-    object_smoothing_queues_[marker.id].push(marker);
+    object_smoothing_queues_[marker.id].push(visualization_msgs::Marker(marker));
   }
 }
 
@@ -71,11 +73,97 @@ bool UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std
 }
 
 void UnityWorld::publishing_timer_callback(const ros::TimerEvent&) {
+
+  tf::StampedTransform object_transform;
+    tf::Quaternion tf_quaternion;
+  if (publish_from_psi_) {
+    // publishing objects in the psi, not the ones from the queue
+
+    std::map<std::string, moveit_msgs::AttachedCollisionObject> attached_collision_objects_map = psi_->getAttachedObjects();
+    std::map<std::string, moveit_msgs::CollisionObject> collision_objects_map = psi_->getObjects();
+    geometry_msgs::Quaternion quaternion_msg;
+    tf::Vector3 tf_vector3;
+    moveit_msgs::CollisionObject current_collision_object;
+
+    // 'casting' AttachedCollisionObjects to CollisionObjects
+    for ( std::pair<std::string, moveit_msgs::AttachedCollisionObject> attached_collision_object_pair : attached_collision_objects_map ) {
+      current_collision_object = attached_collision_object_pair.second.object;
+      current_collision_object.header.stamp = ros::Time::now();
+
+      // Broadcasting object transform
+
+      object_transform.setOrigin(tf::Vector3(current_collision_object.primitive_poses[0].position.x, current_collision_object.primitive_poses[0].position.y, current_collision_object.primitive_poses[0].position.z));
+      tf::quaternionMsgToTF(current_collision_object.primitive_poses[0].orientation, tf_quaternion);
+      object_transform.setRotation(tf_quaternion);
+      collision_object_transform_broadcaster_.sendTransform(tf::StampedTransform(object_transform, ros::Time::now(), current_collision_object.header.frame_id, current_collision_object.id));
+
+      // remove attached objects from objects to ignore attached objects which are still part of the collision objects
+      if (collision_objects_map.find(attached_collision_object_pair.first) != collision_objects_map.end()) {
+        collision_objects_map.erase(attached_collision_object_pair.first);
+        // ROS_WARN_STREAM("The same object (" << ait->first << ") in attached and not attached collision objects!");
+      }
+
+
+
+      // transform object pose to odom_combined
+      try {
+        collision_object_transform_listener_.waitForTransform(object_frame_id_, std::string("/").append(static_cast<std::string>(current_collision_object.id)), ros::Time(0),
+                                ros::Duration(.5));
+        collision_object_transform_listener_.lookupTransform(object_frame_id_, std::string("/").append(static_cast<std::string>(current_collision_object.id)),
+                               ros::Time(0), object_transform);
+      } catch (tf::TransformException &ex) {
+        ROS_ERROR("%s",ex.what());
+        continue;
+      }
+      tf::quaternionTFToMsg(object_transform.getRotation(), quaternion_msg);
+      tf_vector3 = object_transform.getOrigin();
+      current_collision_object.header.frame_id = object_frame_id_;
+      current_collision_object.primitive_poses[0].position.x = tf_vector3.x();
+      current_collision_object.primitive_poses[0].position.y = tf_vector3.y();
+      current_collision_object.primitive_poses[0].position.z = tf_vector3.z();
+      current_collision_object.primitive_poses[0].orientation = quaternion_msg;
+
+      // current_unity_object.header = current_collision_object.header;
+      // current_unity_object.object_name = current_collision_object.id;
+      // current_unity_object.pose = current_collision_object.primitive_poses[0];
+      collision_object_publisher_.publish(current_collision_object);
+      // unity_object_pub.publish(current_unity_object);
+    }
+
+    for ( std::pair<std::string, moveit_msgs::CollisionObject> collision_object_pair : collision_objects_map) {
+      current_collision_object = collision_object_pair.second;
+      current_collision_object.header.stamp = ros::Time::now();
+
+      // Broadcasting object transform
+
+      object_transform.setOrigin(tf::Vector3(current_collision_object.primitive_poses[0].position.x, current_collision_object.primitive_poses[0].position.y, current_collision_object.primitive_poses[0].position.z));
+      tf::quaternionMsgToTF(current_collision_object.primitive_poses[0].orientation, tf_quaternion);
+      object_transform.setRotation(tf_quaternion);
+      collision_object_transform_broadcaster_.sendTransform(tf::StampedTransform(object_transform, ros::Time::now(), current_collision_object.header.frame_id, current_collision_object.id));
+      // current_unity_object.header = current_collision_object.header;
+
+      // no transform necessary because odom_combined is already the frame
+
+      // current_unity_object.object_name = current_collision_object.id;
+      // current_unity_object.pose = current_collision_object.primitive_poses[0];
+      collision_object_publisher_.publish(current_collision_object);
+      // unity_object_pub.publish(current_unity_object);
+    }
+    return;
+  }
+
   // publish all mean collision objects which are updated recent enough
   moveit_msgs::CollisionObject collision_object;
   for (auto& object_queue : object_smoothing_queues_) {
     if (object_queue.second.get_mean_collision_object(collision_object)) {
       collision_object_publisher_.publish(collision_object);
+
+      // Broadcasting object transform
+
+      object_transform.setOrigin(tf::Vector3(collision_object.primitive_poses[0].position.x, collision_object.primitive_poses[0].position.y, collision_object.primitive_poses[0].position.z));
+      tf::quaternionMsgToTF(collision_object.primitive_poses[0].orientation, tf_quaternion);
+      object_transform.setRotation(tf_quaternion);
+      collision_object_transform_broadcaster_.sendTransform(tf::StampedTransform(object_transform, ros::Time::now(), collision_object.header.frame_id, collision_object.id));
     }
   }
 }
@@ -89,6 +177,11 @@ void UnityWorld::remove_collision_objects() {
     current_collision_object.operation = current_collision_object.REMOVE;
     psi_->applyCollisionObject(current_collision_object);
   }
+
+  // after removing the objects from the planning scene, the object queues get reset to the last pose in the planning scene
+  get_update_from_planning_scene();
+  publish_from_psi_ = false;
+
 }
 
 void UnityWorld::add_collision_objects() {
@@ -105,6 +198,9 @@ void UnityWorld::add_collision_objects() {
 
     psi_->applyCollisionObject(collision_object);
   }
+
+  // now, the content of the planning scene gets published as collision objects
+  publish_from_psi_ = true;
 
 }
 

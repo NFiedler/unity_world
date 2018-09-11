@@ -10,7 +10,10 @@
 #include <visualization_msgs/Marker.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit_msgs/CollisionObject.h>
+#include <moveit_msgs/AttachedCollisionObject.h>
 #include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
 #include <geometry_msgs/PointStamped.h>
 #include <std_srvs/Trigger.h>
 
@@ -31,13 +34,15 @@ class UnityWorld {
     ros::NodeHandle nh_;
 
     uint object_lifetime_secs_ = 10;
+
     uint object_smoothing_queue_length_ = 5;
-    std::string object_frame_id = "/odom_combined";
+    std::string object_frame_id_ = "/odom_combined";
 
     std::map<int, LimitedMarkerQueue> object_smoothing_queues_;
 
     // used to transform the recieved markers
     tf::TransformListener collision_object_transform_listener_;
+    tf::TransformBroadcaster collision_object_transform_broadcaster_;
 
     ros::Subscriber object_sub_; // subscribes to the apriltag objects
 
@@ -48,6 +53,8 @@ class UnityWorld {
     ros::Publisher collision_object_publisher_;
 
     moveit::planning_interface::PlanningSceneInterface *psi_;
+
+    bool publish_from_psi_;
 
     void publishing_timer_callback(const ros::TimerEvent&);
     void remove_collision_objects();
