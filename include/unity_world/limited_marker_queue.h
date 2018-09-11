@@ -11,6 +11,7 @@
 class LimitedMarkerQueue {
   public:
     // option for later: LimitedMarkerQueue(int max_length);
+    LimitedMarkerQueue();
     LimitedMarkerQueue(int max_length, ros::Duration element_lifetime);
     ~LimitedMarkerQueue() {};
 
