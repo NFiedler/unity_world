@@ -120,57 +120,30 @@ void UnityWorld::get_collision_object(std::string collision_object_id) {
   // TODO
 }
 
-bool UnityWorld::markerMsgToCollisionObjectMsg(visualization_msgs::Marker marker, moveit_msgs::CollisionObject &collision_object) {
-  moveit_msgs::CollisionObject result;
+bool UnityWorld::collisionObjectMsgToMarkerMsg(moveit_msgs::CollisionObject collision_object, visualization_msgs::Marker &marker) {
+  visualization_msgs::Marker result;
 
   // header
-  result.header = marker.header;
+  result.header = collision_object.header;
 
   // id
-  result.id = marker.id;
+  result.id = std::stoi(collision_object.id);
 
-  // primitive
-  shape_msgs::SolidPrimitive primitive;
+  shape_msgs::SolidPrimitive primitive = collision_object.primitives[0];
 
-  if (marker.type == visualization_msgs::Marker::CUBE) {
-    primitive.type = primitive.BOX;
-    primitive.dimensions.resize(3);
-    primitive.dimensions[0] = marker.scale.x;
-    primitive.dimensions[1] = marker.scale.y;
-    primitive.dimensions[2] = marker.scale.z;
+  if (primitive.type == primitive.BOX) {
+    result.type = visualization_msgs::Marker::CUBE;
+    marker.scale.x = primitive.dimensions[0];
+    marker.scale.y = primitive.dimensions[1];
+    marker.scale.z = primitive.dimensions[2];
   } else {
-    ROS_ERROR("Marker type not supported");
+    ROS_ERROR("CollisionObject type not supported");
     return false;
   }
 
-  result.primitives.push_back(primitive);
+  result.pose = collision_object.primitive_poses[0];
 
-  // primitive pose
-  //tf::StampedTransform marker_transform;
-  //tf::Transform object_transform;
-
-  //tf::TransformListener listener;
-  //try {
-    //listener.waitForTransform(frame_id, marker.header.frame_id, ros::Time(0),
-                              //ros::Duration(5.0));
-    //listener.lookupTransform(frame_id, marker.header.frame_id, ros::Time(0),
-                             //marker_transform);
-  //} catch (tf::TransformException ex) {
-    //ROS_ERROR("%s", ex.what());
-    //return false;
-  //}
-
-  //tf::poseMsgToTF(marker.pose, object_transform);
-
-  //geometry_msgs::Pose pose;
-  //tf::poseTFToMsg(marker_transform * object_transform, pose);
-
-  result.primitive_poses.push_back(marker.pose);
-
-  // operation
-  result.operation = moveit_msgs::CollisionObject::ADD;
-
-  collision_object = result;
+  marker = result;
 
   return true;
 }

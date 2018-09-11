@@ -55,9 +55,9 @@ class UnityWorld {
     void update_from_planning_scene(bool use_queue);
     void get_collision_objects(std::vector<std::string> collision_object_ids);
     void get_collision_object(std::string collision_object_id);
-    bool markerMsgToCollisionObjectMsg(
-      visualization_msgs::Marker marker,
-      moveit_msgs::CollisionObject &collision_object);
+    bool collisionObjectMsgToMarkerMsg(
+      moveit_msgs::CollisionObject collision_object,
+      visualization_msgs::Marker &marker);
 
 };
 

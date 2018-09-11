@@ -98,7 +98,7 @@ bool LimitedMarkerQueue::markerMsgToCollisionObjectMsg(visualization_msgs::Marke
   result.header = marker.header;
 
   // id
-  result.id = marker.id;
+  result.id = std::to_string(marker.id);
 
   // primitive
   shape_msgs::SolidPrimitive primitive;
