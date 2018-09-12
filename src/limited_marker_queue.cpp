@@ -34,7 +34,7 @@ bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker
   mean_marker = marker_list_.back();
 
   int column = 0;
-  double weight = 1/marker_list_size;
+  double weight = 1.0 / static_cast<double>(marker_list_size);
   Eigen::Matrix<double, 4, Eigen::Dynamic> quaternion_matrix;
   quaternion_matrix.resize(4, marker_list_size);
   quaternion_matrix(0, column) = weight * mean_marker.pose.orientation.x;
