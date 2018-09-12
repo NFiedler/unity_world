@@ -14,12 +14,13 @@ UnityWorld::UnityWorld() : nh_() {
 
 
   // setup services
-  setupPlanningSceneService_ = nh_.advertiseService("setupPlanningScene", &UnityWorld::setupPlanningSceneCallback, this);
-  resetPlanningSceneService_ = nh_.advertiseService("resetPlanningScene", &UnityWorld::resetPlanningSceneCallback, this);
+  setupPlanningSceneService_ = nh_.advertiseService("UnityWorld/setupPlanningScene", &UnityWorld::setupPlanningSceneCallback, this);
+  resetPlanningSceneService_ = nh_.advertiseService("UnityWorld/resetPlanningScene", &UnityWorld::resetPlanningSceneCallback, this);
 
   // setup publishers
 
   collision_object_publisher_ = nh_.advertise<moveit_msgs::CollisionObject>("UnityWorld/collision_object", 5);
+  marker_publisher_ = nh_.advertise<moveit_msgs::CollisionObject>("UnityWorld/collision_object_marker", 5);
 
   // setup timers
 
@@ -159,9 +160,16 @@ void UnityWorld::publishing_timer_callback(const ros::TimerEvent&) {
 
   // publish all mean collision objects which are updated recent enough
   moveit_msgs::CollisionObject collision_object;
+  visualization_msgs::Marker marker;
   for (auto& object_queue : object_smoothing_queues_) {
     if (object_queue.second.get_mean_collision_object(collision_object)) {
       collision_object_publisher_.publish(collision_object);
+      if(publish_collision_object_marker_ && object_queue.second.get_mean_marker(marker)) {
+        marker.lifetime = 0.2;
+        marker.color.a = 1;
+        marker.color.b = 1;
+        marker_publisher_.publish(marker);
+      }
 
       // Broadcasting object transform
 

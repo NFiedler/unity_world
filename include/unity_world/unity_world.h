@@ -37,6 +37,7 @@ class UnityWorld {
 
     uint object_smoothing_queue_length_ = 5;
     std::string object_frame_id_ = "/odom_combined";
+    bool publish_collision_object_marker_ = true;
 
     std::map<int, LimitedMarkerQueue> object_smoothing_queues_;
 
@@ -51,6 +52,7 @@ class UnityWorld {
 
     ros::Timer publishing_timer_;
     ros::Publisher collision_object_publisher_;
+    ros::Publisher marker_publisher_;
 
     moveit::planning_interface::PlanningSceneInterface *psi_;
 
