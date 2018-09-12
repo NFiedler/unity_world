@@ -40,9 +40,10 @@ void UnityWorld::objectsCallback(const visualization_msgs::MarkerArray &msg) {
     tf::Transform object_transform;
 
     try {
-      collision_object_transform_listener_.waitForTransform(object_frame_id_, marker.header.frame_id, ros::Time(0),
-                                ros::Duration(.5));
-      collision_object_transform_listener_.lookupTransform(object_frame_id_, marker.header.frame_id, ros::Time(0),
+      ros::Time now = ros::Time(0);
+      collision_object_transform_listener_.waitForTransform(object_frame_id_, marker.header.frame_id, now,
+                                ros::Duration(5));
+      collision_object_transform_listener_.lookupTransform(object_frame_id_, marker.header.frame_id, now,
                                marker_transform);
     } catch (tf::TransformException ex) {
       ROS_ERROR("%s", ex.what());
