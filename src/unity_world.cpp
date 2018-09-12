@@ -20,7 +20,7 @@ UnityWorld::UnityWorld() : nh_() {
   // setup publishers
 
   collision_object_publisher_ = nh_.advertise<moveit_msgs::CollisionObject>("UnityWorld/collision_object", 5);
-  marker_publisher_ = nh_.advertise<moveit_msgs::CollisionObject>("UnityWorld/collision_object_marker", 5);
+  marker_publisher_ = nh_.advertise<visualization_msgs::Marker>("UnityWorld/collision_object_marker", 5);
 
   // setup timers
 
@@ -165,7 +165,7 @@ void UnityWorld::publishing_timer_callback(const ros::TimerEvent&) {
     if (object_queue.second.get_mean_collision_object(collision_object)) {
       collision_object_publisher_.publish(collision_object);
       if(publish_collision_object_marker_ && object_queue.second.get_mean_marker(marker)) {
-        marker.lifetime = 0.2;
+        marker.lifetime = ros::Duration(0.2);
         marker.color.a = 1;
         marker.color.b = 1;
         marker_publisher_.publish(marker);
