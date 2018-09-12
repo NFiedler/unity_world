@@ -60,8 +60,6 @@ class UnityWorld {
     void remove_collision_objects();
     void add_collision_objects();
     void get_update_from_planning_scene();
-    void get_collision_objects(std::vector<std::string> collision_object_ids);
-    void get_collision_object(std::string collision_object_id);
     bool collisionObjectMsgToMarkerMsg(
       moveit_msgs::CollisionObject collision_object,
       visualization_msgs::Marker &marker);

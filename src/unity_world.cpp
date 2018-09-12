@@ -14,16 +14,18 @@ UnityWorld::UnityWorld() : nh_() {
 
 
   // setup services
-  setupPlanningSceneService_ = nh_.advertiseService("setupPlanningSceneService", &UnityWorld::setupPlanningSceneCallback, this);
-  resetPlanningSceneService_ = nh_.advertiseService("resetPlanningSceneService", &UnityWorld::resetPlanningSceneCallback, this);
+  setupPlanningSceneService_ = nh_.advertiseService("setupPlanningScene", &UnityWorld::setupPlanningSceneCallback, this);
+  resetPlanningSceneService_ = nh_.advertiseService("resetPlanningScene", &UnityWorld::resetPlanningSceneCallback, this);
 
   // setup publishers
 
-  collision_object_publisher_ = nh_.advertise<moveit_msgs::CollisionObject>("/collision_object", 5);
+  collision_object_publisher_ = nh_.advertise<moveit_msgs::CollisionObject>("UnityWorld/collision_object", 5);
 
   // setup timers
 
   publishing_timer_ = nh_.createTimer(ros::Duration(0.1), &UnityWorld::publishing_timer_callback, this);
+
+  ROS_INFO("Initialized UnityWorld");
 
 }
 
@@ -62,6 +64,7 @@ bool UnityWorld::setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std
   add_collision_objects();
   res.success = true;
   res.message = "added collision objects to planning scene";
+  ROS_INFO("Added collision objects to planning scene");
   return true;
 }
 
@@ -69,13 +72,14 @@ bool UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std
   remove_collision_objects();
   res.success = true;
   res.message = "removed collision objects from planning scene";
+  ROS_INFO("Removed collision objects from planning scene");
   return true;
 }
 
 void UnityWorld::publishing_timer_callback(const ros::TimerEvent&) {
 
   tf::StampedTransform object_transform;
-    tf::Quaternion tf_quaternion;
+  tf::Quaternion tf_quaternion;
   if (publish_from_psi_) {
     // publishing objects in the psi, not the ones from the queue
 
@@ -219,14 +223,6 @@ void UnityWorld::get_update_from_planning_scene() {
     object_smoothing_queues_[marker.id].push(visualization_msgs::Marker(marker));
   }
 
-}
-
-void UnityWorld::get_collision_objects(std::vector<std::string> collision_object_ids) {
-  // TODO
-}
-
-void UnityWorld::get_collision_object(std::string collision_object_id) {
-  // TODO
 }
 
 bool UnityWorld::collisionObjectMsgToMarkerMsg(moveit_msgs::CollisionObject collision_object, visualization_msgs::Marker &marker) {
