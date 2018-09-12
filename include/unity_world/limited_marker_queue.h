@@ -7,6 +7,8 @@
 #include <visualization_msgs/Marker.h>
 #include <iterator>
 #include <moveit_msgs/CollisionObject.h>
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 
 class LimitedMarkerQueue {
   public:

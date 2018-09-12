@@ -14,6 +14,11 @@ void LimitedMarkerQueue::push(visualization_msgs::Marker marker) {
 }
 
 bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker){
+  // calculates the mean of the markers in the queue
+  // the average of the quaternions is calculated as explained in
+  // https://stackoverflow.com/questions/12374087/average-of-multiple-quaternions
+  // and
+  // https://www.acsu.buffalo.edu/~johnc/ave_quat07.pdf
 
   // update the marker list before accessing it
   update_marker_list();
@@ -30,6 +35,15 @@ bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker
   // reset the marker by setting it to the most recent element in the queue.
   mean_marker = marker_list_.back();
 
+  int column = 0;
+  double weight = 1/marker_list_size;
+  Eigen::Matrix<double, 4, Eigen::Dynamic> quaternion_matrix;
+  quaternion_matrix.resize(4, marker_list_size);
+  quaternion_matrix(0, column) = weight * mean_marker.pose.orientation.x;
+  quaternion_matrix(1, column) = weight * mean_marker.pose.orientation.y;
+  quaternion_matrix(2, column) = weight * mean_marker.pose.orientation.z;
+  quaternion_matrix(3, column) = weight * mean_marker.pose.orientation.w;
+
   // setting up the iterator to ignore the last element of the list.
   std::list<visualization_msgs::Marker>::iterator pre_last = marker_list_.end();
   pre_last--;
@@ -42,10 +56,11 @@ bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker
     mean_marker.pose.position.z += marker_iterator->pose.position.z;
 
     // orientation
-    mean_marker.pose.orientation.x += marker_iterator->pose.orientation.x;
-    mean_marker.pose.orientation.y += marker_iterator->pose.orientation.y;
-    mean_marker.pose.orientation.z += marker_iterator->pose.orientation.z;
-    mean_marker.pose.orientation.w += marker_iterator->pose.orientation.w;
+    column ++;
+    quaternion_matrix(0, column) = weight * marker_iterator->pose.orientation.x;
+    quaternion_matrix(1, column) = weight * marker_iterator->pose.orientation.y;
+    quaternion_matrix(2, column) = weight * marker_iterator->pose.orientation.z;
+    quaternion_matrix(3, column) = weight * marker_iterator->pose.orientation.w;
 
     // the shape etc. is not changed
   }
@@ -54,10 +69,24 @@ bool LimitedMarkerQueue::get_mean_marker(visualization_msgs::Marker &mean_marker
   mean_marker.pose.position.y /= marker_list_size;
   mean_marker.pose.position.z /= marker_list_size;
 
-  mean_marker.pose.orientation.x /= marker_list_size;
-  mean_marker.pose.orientation.y /= marker_list_size;
-  mean_marker.pose.orientation.z /= marker_list_size;
-  mean_marker.pose.orientation.w /= marker_list_size;
+
+  Eigen::Matrix4d matrix = quaternion_matrix * quaternion_matrix.transpose();
+  Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(matrix);
+  if (eigensolver.info() != Eigen::Success) {
+    ROS_ERROR("Error calculating the mean quaternion!");
+
+    ROS_INFO_STREAM("Input matrix:" << std::endl << matrix << std::endl << "eigensolver.info():" << std::endl << eigensolver.info());
+    return false;
+  }
+  Eigen::VectorXd eigenvalues = eigensolver.eigenvalues();
+  Eigen::VectorXd::Index max_index;
+  eigenvalues.maxCoeff(&max_index);
+  Eigen::Vector4d quaternion_vector = eigensolver.eigenvectors().col(max_index);
+  quaternion_vector.normalize();
+  mean_marker.pose.orientation.x = quaternion_vector[0];
+  mean_marker.pose.orientation.y = quaternion_vector[1];
+  mean_marker.pose.orientation.z = quaternion_vector[2];
+  mean_marker.pose.orientation.w = quaternion_vector[3];
 
   buffer_marker_ = visualization_msgs::Marker(mean_marker); // copy the marker to the buffer.
   markerMsgToCollisionObjectMsg(buffer_marker_, buffer_collision_object_); // convert the marker to a collision object to provide and buffer both options
