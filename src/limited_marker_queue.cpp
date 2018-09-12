@@ -1,8 +1,6 @@
 #include <unity_world/limited_marker_queue.h>
 
-LimitedMarkerQueue::LimitedMarkerQueue() {
-  LimitedMarkerQueue(5, ros::Duration(10));
-}
+LimitedMarkerQueue::LimitedMarkerQueue() : max_length_(5), queue_changed_(true), element_lifetime_(10, 0), marker_list_()  {}
 
 LimitedMarkerQueue::LimitedMarkerQueue(int max_length, ros::Duration element_lifetime) : max_length_(max_length), queue_changed_(true), element_lifetime_(element_lifetime), marker_list_()  {}
 
