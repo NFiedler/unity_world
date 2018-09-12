@@ -31,6 +31,10 @@ UnityWorld::UnityWorld() : nh_() {
 }
 
 void UnityWorld::objectsCallback(const visualization_msgs::MarkerArray &msg) {
+  if (publish_from_psi_) {
+    // no need to add objects to the queue.
+    return;
+  }
 
   visualization_msgs::Marker marker;
   for (auto &msg_marker : msg.markers) {
