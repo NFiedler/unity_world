@@ -67,6 +67,10 @@ void UnityWorld::objectsCallback(const visualization_msgs::MarkerArray &msg) {
 }
 
 bool UnityWorld::setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+  if (publish_from_psi_) {
+    // already publishing from psi -> planningScene is set up already
+    return true;
+  }
   add_collision_objects();
   res.success = true;
   res.message = "added collision objects to planning scene";
@@ -75,6 +79,10 @@ bool UnityWorld::setupPlanningSceneCallback(std_srvs::Trigger::Request &req, std
 }
 
 bool UnityWorld::resetPlanningSceneCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+  if (!publish_from_psi_) {
+    // not publishing from psi -> planningScene is reset already
+    return true;
+  }
   remove_collision_objects();
   res.success = true;
   res.message = "removed collision objects from planning scene";
