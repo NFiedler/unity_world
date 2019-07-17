@@ -35,6 +35,11 @@ target_link_libraries(unity_world ${catkin_LIBRARIES})
 target_link_libraries(unity_world ${catkin_LIBRARIES} ${PROJECT_NAME}_lib)
 add_dependencies(unity_world ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(marker_to_collision_object src/marker_to_collision_object.cpp)
+target_link_libraries(marker_to_collision_object ${catkin_LIBRARIES})
+target_link_libraries(marker_to_collision_object ${catkin_LIBRARIES} ${PROJECT_NAME}_lib)
+add_dependencies(marker_to_collision_object ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 install(DIRECTORY include/${PROJECT_NAME}/
  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
